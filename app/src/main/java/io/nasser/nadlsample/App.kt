@@ -4,11 +4,11 @@ import android.app.Application
 
 class App : Application() {
 
-    internal lateinit var featurePlugin: AppFeatureFacade
+    internal lateinit var featurePlugin: DynamicFeaturePlugin
 
     override fun onCreate() {
         super.onCreate()
-        featurePlugin = AppFeatureFacade(this.applicationContext)
+        featurePlugin = DynamicFeaturePlugin(this.applicationContext)
     }
 
 

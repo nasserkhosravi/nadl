@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import io.nasser.nadl.databinding.ActivityMainBinding
-import java.lang.StringBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,8 +19,7 @@ class MainActivity : AppCompatActivity() {
         val featurePlugin = getFeaturePlugin()
 
         binding.btnDownload.setOnClickListener {
-            featurePlugin.loadDex(this@MainActivity)
-            featurePlugin.loadResource(this@MainActivity)
+            featurePlugin.loadEverything(this@MainActivity)
         }
         binding.btnPresentText.setOnClickListener {
             if (!featurePlugin.isReady()) {

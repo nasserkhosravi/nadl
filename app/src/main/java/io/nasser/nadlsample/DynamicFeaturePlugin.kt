@@ -5,23 +5,20 @@ import android.content.res.Resources
 import android.content.res.loader.ResourcesLoader
 import android.content.res.loader.ResourcesProvider
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import dalvik.system.DexClassLoader
 import io.nasser.mylib.api.HelloWorld
-import java.io.DataInputStream
+import io.nasser.nadlsample.content.OptionalContextWrapper
+import io.nasser.nadlsample.content.res.RuntimeAssetManager
+import io.nasser.nadlsample.content.res.RuntimeResource
 import java.io.File
-import java.net.URL
-import java.net.URLConnection
 
 
-internal class AppFeatureFacade(
+class DynamicFeaturePlugin(
     private val appContext: Context
 ) {
 
@@ -42,27 +39,34 @@ internal class AppFeatureFacade(
 
     fun isReady(): Boolean = apkFile?.exists() ?: false
 
-    fun loadDex(context: Context) {
+    private fun loadDex(context: Context) {
         if (isReady()) return
-        loadCodesFromAsset(context)
+        loadApkFromAsset(context)
     }
 
-    fun loadResource(context: Context) {
+    private fun loadResource(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            overrideResourcesApi30(context)
+            overrideResourcesApi30AndMore(context)
+        } else {
+            //TODO:
         }
     }
 
-    private fun loadCodesFromAsset(context: Context) {
-        val readBytes = context.assets.open("AppExporter-debug.apk").readBytes()
-        apkFile = File(context.filesDir, "asset_adl.apk").also {
+    fun loadEverything(context: Context) {
+        loadDex(context)
+        loadResource(context)
+    }
+
+    private fun loadApkFromAsset(context: Context) {
+        val readBytes = context.assets.open(APK_NAME).readBytes()
+        apkFile = File(context.filesDir, "asset_adl3.apk").also {
             it.writeBytes(readBytes)
         }
         Toast.makeText(context, "Ready", Toast.LENGTH_SHORT).show()
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
-    private fun overrideResourcesApi30(context: Context) {
+    private fun overrideResourcesApi30AndMore(context: Context) {
         val loader = ResourcesLoader().also {
             val apkFd = ParcelFileDescriptor.open(apkFile, ParcelFileDescriptor.MODE_READ_ONLY)
             val provider = ResourcesProvider.loadFromApk(apkFd)
@@ -73,43 +77,12 @@ internal class AppFeatureFacade(
     }
 
     private fun loadFromHttpAndStoreFile(context: Context, url: String) {
-        val dexFile = File(appContext.cacheDir, "adl.apk")
-        val thread = Thread {
-            try {
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(context, "DL Start", Toast.LENGTH_SHORT).show()
-                }
-                val u = URL(url)
-                val conn: URLConnection = u.openConnection()
-                conn.readTimeout = 3000
-                conn.connectTimeout = 3000
-                Log.d("xosro", "Before content ")
-                val contentLength: Int = conn.contentLength
-                Log.d("xosro", "Start download")
-                val stream = DataInputStream(u.openStream())
-                val buffer = ByteArray(contentLength)
-                stream.readFully(buffer)
-                stream.close()
-                Log.d("xosro", "Success of download to buffer")
-                this.apkFile = dexFile.also {
-                    it.setReadOnly()
-                    it.writeBytes(buffer)
-                }
-                Log.d("xosro", "file wrote")
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(context, "DL Finished", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(context, "DL Failed, Ready", Toast.LENGTH_SHORT).show()
-                }
-                Log.e("xosro", e.message!!)
-            }
+        loadFromHttpAndStoreFile(context, url) {
+            this.apkFile = it
         }
-        thread.start()
     }
 
-    class ClassFactory(private val parent: AppFeatureFacade) {
+    class ClassFactory(private val parent: DynamicFeaturePlugin) {
 
         companion object {
             private const val LIB_PATH = "io.nasser.mylib.impl"
@@ -127,6 +100,26 @@ internal class AppFeatureFacade(
             return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
                 arguments = bundleOf("centerTextMessage" to centerTextMessage)
             }
+        }
+    }
+
+    companion object {
+        private const val APK_NAME = "AppExporter-debug.apk"
+        private const val RESOURCE_TABLE_FILE_NAME = "rTable.txt"
+
+        fun properContext(newBase: Context): Context {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                return newBase
+            }
+            val readBytes = newBase.assets.open(RESOURCE_TABLE_FILE_NAME).readBytes()
+            val rtFile = File(newBase.filesDir, "asset_rTable.txt").also {
+                it.writeBytes(readBytes)
+            }
+
+            return OptionalContextWrapper(
+                newBase,
+                RuntimeResource(newBase.resources, RuntimeAssetManager(rtFile))
+            )
         }
     }
 }
