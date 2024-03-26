@@ -12,10 +12,12 @@
 
     <TextView
         android:id="@+id/tv_text"
-        android:fontFamily="@font/inter_family"
+        android:fontFamily="@font/inter_medium"
+        android:background="@color/zzBackColor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:gravity="center"
-        android:textColor="#fff" />
+        android:textColor="@android:color/white" />
+
 </RelativeLayout>

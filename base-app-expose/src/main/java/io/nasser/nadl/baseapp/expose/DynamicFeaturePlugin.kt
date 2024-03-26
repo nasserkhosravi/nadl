@@ -10,11 +10,12 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import dalvik.system.DexClassLoader
+import dalvik.system.BaseDexClassLoader
+import dalvik.system.PathClassLoader
 import io.nasser.mylib.api.HelloWorld
 import io.nasser.nadl.baseapp.expose.content.OptionalContextWrapper
-import io.nasser.nadl.baseapp.expose.content.res.RuntimeAssetManager
 import io.nasser.nadl.baseapp.expose.content.res.RuntimeResource
+import io.nasser.nadl.baseapp.expose.content.res.RuntimeAssetManager
 import java.io.File
 
 
@@ -23,14 +24,17 @@ class DynamicFeaturePlugin(
 ) {
 
     private var apkFile: File? = null
-    private var dexLoader: DexClassLoader? = null
+    private var dexLoader: BaseDexClassLoader? = null
 
-    private fun getDexClassLoader(): DexClassLoader {
+    private fun getDexClassLoader(): BaseDexClassLoader {
         if (dexLoader == null) {
             if (!isReady()) {
                 throw IllegalStateException("The dex file is not available")
             }
-            dexLoader = DexClassLoader(apkFile!!.absolutePath, null, null, appContext.classLoader)
+            val absolutePath = apkFile!!.absolutePath
+            val classLoader = appContext.classLoader
+            dexLoader = PathClassLoader(absolutePath, classLoader)
+//            dexLoader = DexClassLoader(absolutePath, null, null, classLoader)
         }
         return dexLoader!!
     }
@@ -85,9 +89,11 @@ class DynamicFeaturePlugin(
     class ClassFactory(private val parent: DynamicFeaturePlugin) {
 
         companion object {
+            //TODO: move these to its api module
             private const val LIB_PATH = "io.nasser.mylib.impl"
             private const val CLASS_PATH_HelloWorld = "$LIB_PATH.HelloWorldImpl"
-            private const val CLASS_PATH_DynamicStarterFragment = "$LIB_PATH.DynamicStarterFragment"
+            private const val CLASS_PATH_StarterFragmentXml = "$LIB_PATH.StarterFragmentXml"
+            private const val CLASS_PATH_StarterFragmentBasic = "$LIB_PATH.StarterFragmentBasic"
         }
 
         fun newHelloWorld(): HelloWorld {
@@ -95,8 +101,15 @@ class DynamicFeaturePlugin(
             return HelloWorldLoader(dexClassLoader.loadClass(CLASS_PATH_HelloWorld))
         }
 
-        fun newDynamicStarterFragment(centerTextMessage: String): Fragment {
-            val loadClassPath = parent.getDexClassLoader().loadClass(CLASS_PATH_DynamicStarterFragment)
+        fun newStarterFragmentXml(centerTextMessage: String): Fragment {
+            val loadClassPath = parent.getDexClassLoader().loadClass(CLASS_PATH_StarterFragmentXml)
+            return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
+                arguments = bundleOf("centerTextMessage" to centerTextMessage)
+            }
+        }
+
+        fun newStarterFragmentBasic(centerTextMessage: String): Fragment {
+            val loadClassPath = parent.getDexClassLoader().loadClass(CLASS_PATH_StarterFragmentBasic)
             return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
                 arguments = bundleOf("centerTextMessage" to centerTextMessage)
             }
@@ -104,22 +117,39 @@ class DynamicFeaturePlugin(
     }
 
     companion object {
-        private const val APK_NAME = "AppExporter-debug.apk"
-        private const val RESOURCE_TABLE_FILE_NAME = "rTable.txt"
+        private const val APK_NAME = "dynamic-lib-apk-exporter-debug.apk"
+        private const val FILE_VALUES = "Values.zip"
 
         fun properContext(newBase: Context): Context {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 return newBase
             }
-            val readBytes = newBase.assets.open(RESOURCE_TABLE_FILE_NAME).readBytes()
-            val rtFile = File(newBase.filesDir, "asset_rTable.txt").also {
-                it.writeBytes(readBytes)
-            }
+            //todo: need caching check
+            val valueFile = loadValueFile(newBase)
+            val apkFile = loadApkFromAsset(newBase)
 
             return OptionalContextWrapper(
                 newBase,
-                RuntimeResource(newBase.resources, RuntimeAssetManager(rtFile))
+                RuntimeResource(
+                    newBase.resources,
+                    RuntimeAssetManager(newBase.filesDir, apkFile, valueFile, "en")
+                )
             )
+        }
+
+        private fun loadValueFile(newBase: Context): File {
+            val readBytes = newBase.assets.open(FILE_VALUES).readBytes()
+            val rtFile = File(newBase.filesDir, "Values.zip").also {
+                it.writeBytes(readBytes)
+            }
+            return rtFile
+        }
+
+        private fun loadApkFromAsset(originalContext: Context): File {
+            val readBytes = originalContext.assets.open(APK_NAME).readBytes()
+            return File(originalContext.cacheDir, "asset_adl3.apk").also {
+                it.writeBytes(readBytes)
+            }
         }
     }
 }

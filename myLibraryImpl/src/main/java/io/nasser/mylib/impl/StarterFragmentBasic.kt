@@ -1,22 +1,38 @@
 package io.nasser.mylib.impl
 
+import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.TypefaceCompat
 import androidx.fragment.app.Fragment
 import io.nasser.mylibrary.R
 
-class DynamicStarterFragment : Fragment() {
+class StarterFragmentBasic : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         //xml layout test
-        return inflater.inflate(R.layout.fragment_dynamic_starter, container, false).apply {
+        return LinearLayout(context).apply {
+            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
             //color test
             setBackgroundColor(ContextCompat.getColor(context, R.color.zzBackColor))
+
+            addView(TextView(context).apply {
+                layoutParams =
+                    LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+                        .apply {
+                            gravity = Gravity.CENTER
+                        }
+                id = R.id.tv_text
+            })
         }
     }
 
@@ -28,11 +44,10 @@ class DynamicStarterFragment : Fragment() {
             text = arguments?.getString("centerTextMessage")
                 //string resource test
                 .plus("\n in: ").plus(getString(R.string.lib_name))
-        }
 
-        view.findViewById<ImageView>(R.id.img)?.apply {
-            //loading drawable test
-            setImageDrawable(ContextCompat.getDrawable(context, R.drawable.baseline_arrow_back_ios_new_24))
+            setTextColor(ContextCompat.getColor(context, android.R.color.white))
+            val font = getFont(R.font.inter_medium)
+            setTypeface(font)
         }
     }
 }

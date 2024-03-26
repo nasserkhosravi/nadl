@@ -33,7 +33,8 @@ android {
 
 dependencies {
 
-    implementation(project(mapOf("path" to ":base-app-expose")))
+//    to prevent R conflict value generation between base and exported, The build need to a module that have all R values (base-app-expose)
+//    implementation(project(mapOf("path" to ":base-app-expose")))
     implementation(project(mapOf("path" to ":myLibraryImpl")))
 
 }

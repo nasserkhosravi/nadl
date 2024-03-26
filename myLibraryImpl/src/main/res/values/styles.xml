@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="LibTheme">
+        <item name="attr_my_toolbar_height">@dimen/my_toolbar_app_height</item>
+    </style>
+</resources>

@@ -11,11 +11,15 @@ import java.io.InputStream
 
 class RuntimeResource(
     res: Resources,
-    private val dlAsset: RuntimeAssetManager?,
+    val dlAsset: RuntimeAssetManager?,
 ) : Resources(res.assets, res.displayMetrics, res.configuration) {
 
     override fun getString(id: Int): String {
         return dlAsset?.getString(id) ?: super.getString(id)
+    }
+
+    override fun getString(id: Int, vararg formatArgs: Any?): String {
+        return super.getString(id, *formatArgs)
     }
 
     override fun getResourceEntryName(resid: Int): String {
@@ -40,14 +44,13 @@ class RuntimeResource(
 //        } finally {
 //            releaseTempTypedValue(value);
 //        }
-        return super.getDimension(id)
+        return dlAsset?.getDimen(id) ?: super.getDimension(id)
     }
 
 
     override fun getFont(id: Int): Typeface {
-        //need loadXmlResourceParser, maybe we can directly load them by Typeface.createFromFile()
-        //require for jetpack compose
-        return super.getFont(id)
+        //ResourcesCompat.getFont used resource.getValue
+        return dlAsset?.getFont(id) ?: super.getFont(id)
     }
 
     override fun getXml(id: Int): XmlResourceParser {
@@ -72,16 +75,29 @@ class RuntimeResource(
     }
 
     override fun obtainAttributes(set: AttributeSet?, attrs: IntArray?): TypedArray {
-        //use mResourcesImpl.getAssets().retrieveAttributes.
+        //used mResourcesImpl.getAssets().retrieveAttributes.
         return super.obtainAttributes(set, attrs)
     }
 
     override fun getValue(id: Int, outValue: TypedValue?, resolveRefs: Boolean) {
-        super.getValue(id, outValue, resolveRefs)
-        //need work
+        val handledObject = dlAsset?.getValue(id, outValue, resolveRefs)
+        handledObject ?: super.getValue(id, outValue, resolveRefs)
     }
+
 
     override fun openRawResource(id: Int): InputStream {
         return super.openRawResource(id)
+    }
+
+    override fun openRawResource(id: Int, value: TypedValue?): InputStream {
+        return super.openRawResource(id, value)
+    }
+
+    override fun getInteger(id: Int): Int {
+        return super.getInteger(id)
+    }
+
+    override fun getBoolean(id: Int): Boolean {
+        return super.getBoolean(id)
     }
 }

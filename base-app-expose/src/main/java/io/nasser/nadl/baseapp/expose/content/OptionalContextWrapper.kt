@@ -15,6 +15,8 @@ class OptionalContextWrapper(
         return super.getAssets()
     }
 
-    override fun getResources(): Resources = resourceDelegate ?: base.resources
+    override fun getResources(): Resources {
+        return resourceDelegate ?: base.resources
+    }
 
 }

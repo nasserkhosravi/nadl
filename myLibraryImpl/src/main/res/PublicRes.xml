@@ -1,0 +1,17 @@
+<resources>
+    <public type="attr" name="attr_my_toolbar_height" id="0x7f010000"/>
+    <public type="color" name="zzBackColor" id="0x7f020000"/>
+    <public type="dimen" name="my_toolbar_app_height" id="0x7f030000"/>
+    <public type="drawable" name="baseline_anchor_24" id="0x7f040000"/>
+    <public type="drawable" name="baseline_arrow_back_ios_new_24" id="0x7f040001"/>
+    <public type="font" name="inter_family" id="0x7f050000"/>
+    <public type="font" name="inter_medium" id="0x7f050001"/>
+    <public type="font" name="inter_regular" id="0x7f050002"/>
+    <public type="id" name="img" id="0x7f060000"/>
+    <public type="id" name="img" id="0x7f060001"/>
+    <public type="layout" name="fragment_dynamic_starter" id="0x7f070000"/>
+    <public type="string" name="app_name" id="0x7f080000"/>
+    <public type="string" name="lib_name" id="0x7f080001"/>
+    <public type="style" name="LibTheme" id="0x7f090000"/>
+    <public type="style" name="ThemeLibAppExporter" id="0x7f090001"/>
+</resources>
