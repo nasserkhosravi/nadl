@@ -26,7 +26,7 @@ class DynamicFeaturePlugin(
     private var apkFile: File? = null
     private var dexLoader: BaseDexClassLoader? = null
 
-    private fun getDexClassLoader(): BaseDexClassLoader {
+    private fun getClassLoader(): BaseDexClassLoader {
         if (dexLoader == null) {
             if (!isReady()) {
                 throw IllegalStateException("The dex file is not available")
@@ -34,7 +34,6 @@ class DynamicFeaturePlugin(
             val absolutePath = apkFile!!.absolutePath
             val classLoader = appContext.classLoader
             dexLoader = PathClassLoader(absolutePath, classLoader)
-//            dexLoader = DexClassLoader(absolutePath, null, null, classLoader)
         }
         return dexLoader!!
     }
@@ -97,19 +96,19 @@ class DynamicFeaturePlugin(
         }
 
         fun newHelloWorld(): HelloWorld {
-            val dexClassLoader = parent.getDexClassLoader()
+            val dexClassLoader = parent.getClassLoader()
             return HelloWorldLoader(dexClassLoader.loadClass(CLASS_PATH_HelloWorld))
         }
 
         fun newStarterFragmentXml(centerTextMessage: String): Fragment {
-            val loadClassPath = parent.getDexClassLoader().loadClass(CLASS_PATH_StarterFragmentXml)
+            val loadClassPath = parent.getClassLoader().loadClass(CLASS_PATH_StarterFragmentXml)
             return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
                 arguments = bundleOf("centerTextMessage" to centerTextMessage)
             }
         }
 
         fun newStarterFragmentBasic(centerTextMessage: String): Fragment {
-            val loadClassPath = parent.getDexClassLoader().loadClass(CLASS_PATH_StarterFragmentBasic)
+            val loadClassPath = parent.getClassLoader().loadClass(CLASS_PATH_StarterFragmentBasic)
             return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
                 arguments = bundleOf("centerTextMessage" to centerTextMessage)
             }
