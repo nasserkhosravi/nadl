@@ -1,21 +1,39 @@
 package io.nasser.nadl.baseapp.expose
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import io.nasser.baseapp.expose.databinding.ActivityMainBinding
+import io.nasser.ndksample.SampleJNIDelegate
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val featurePlugin = getFeaturePlugin()
+        binding.btnRtNativePresent.setOnClickListener {
+            featurePlugin.nativeLibLoader.loadNativeLibFromAsset()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    val theJniAccessor = SampleJNIDelegate()
+                    val jniMessage = theJniAccessor.stringFromJNI()
+                    Log.d("xosro", "stringFromJNI: $jniMessage")
+                    Toast.makeText(this, "stringFromJNI: $jniMessage", Toast.LENGTH_LONG).show()
+                }, {
+                    it.printStackTrace()
+                    Toast.makeText(this, "RT Native load failed", Toast.LENGTH_SHORT).show()
+                })
+        }
 
         binding.btnDownload.setOnClickListener {
             featurePlugin.loadEverything(this@MainActivity)

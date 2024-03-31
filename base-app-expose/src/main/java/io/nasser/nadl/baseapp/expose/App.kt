@@ -8,7 +8,8 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        featurePlugin = DynamicFeaturePlugin(this.applicationContext)
+        val appContext = this.applicationContext
+        featurePlugin = DynamicFeaturePlugin(appContext, NativeLibLoader(appContext))
     }
 
 
