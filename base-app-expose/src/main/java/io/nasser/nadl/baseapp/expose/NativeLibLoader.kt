@@ -24,9 +24,19 @@ class NativeLibLoader(
     @SuppressLint("CheckResult")
     fun loadNativeLibFromHttp(): Observable<File> {
         val fileSo = File(appContext.filesDir, NATIVE_LIB_NAME)
-        return observableDownloadAndWriteFile("https://tmpfiles.org/4581069/libndksample.txt", fileSo)
-            .rxLoadLib()
-            .subscribeOn(Schedulers.io())
+        return if (!isNativeLibLoaded){
+            if (fileSo.exists()){
+                Observable.just(fileSo)
+                    .rxLoadLib()
+                    .subscribeOn(Schedulers.io())
+            }else {
+                observableDownloadAndWriteFile("https://tmpfiles.org/dl/15209893/libndksample.txt", fileSo)
+                    .rxLoadLib()
+                    .subscribeOn(Schedulers.io())
+            }
+        }else {
+            Observable.just(fileSo)
+        }
     }
 
     private fun rxPrepareFile(fileSo: File): Observable<File> {

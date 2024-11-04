@@ -35,6 +35,7 @@ fun observableDownloadAndWriteFile(url: String, targetWriteFile: File): Observab
         stream.close()
         targetWriteFile.writeBytes(buffer)
         Log.d("xosro", "Success of download to buffer")
+        targetWriteFile.setReadable(true)
         targetWriteFile
     }.subscribeOn(Schedulers.io())
 }

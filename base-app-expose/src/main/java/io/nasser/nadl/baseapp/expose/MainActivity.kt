@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         val featurePlugin = getFeaturePlugin()
         binding.btnRtNativePresent.setOnClickListener {
-            featurePlugin.nativeLibLoader.loadNativeLibFromAsset()
+            featurePlugin.nativeLibLoader.loadNativeLibFromHttp()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     val theJniAccessor = SampleJNIDelegate()
