@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "io.nasser.appexporter"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "io.nasser.appexporter"

@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "io.nasser.nadl.main"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "io.nasser.nadl.main"

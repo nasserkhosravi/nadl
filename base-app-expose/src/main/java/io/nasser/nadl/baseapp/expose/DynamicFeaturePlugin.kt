@@ -1,5 +1,6 @@
 package io.nasser.nadl.baseapp.expose
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.content.res.loader.ResourcesLoader
@@ -16,11 +17,13 @@ import io.nasser.mylib.api.HelloWorld
 import io.nasser.nadl.baseapp.expose.content.OptionalContextWrapper
 import io.nasser.nadl.baseapp.expose.content.res.RuntimeResource
 import io.nasser.nadl.baseapp.expose.content.res.RuntimeAssetManager
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import java.io.File
 
 
 class DynamicFeaturePlugin(
-    private val appContext: Context
+    private val appContext: Context,
+    val nativeLibLoader: NativeLibLoader
 ) {
 
     private var apkFile: File? = null
@@ -79,11 +82,19 @@ class DynamicFeaturePlugin(
         context.resources.addLoaders(loader)
     }
 
+    @SuppressLint("CheckResult")
     private fun loadFromHttpAndStoreFile(context: Context, url: String) {
-        loadFromHttpAndStoreFile(context, url) {
-            this.apkFile = it
-        }
+        val cacheApkFile = File(context.cacheDir, "adl.apk")
+        observableDownloadAndWriteFile(url, cacheApkFile)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                apkFile = it
+                Toast.makeText(appContext, "download completed", Toast.LENGTH_SHORT).show()
+            }, {
+                Toast.makeText(appContext, "download failed", Toast.LENGTH_SHORT).show()
+            })
     }
+
 
     class ClassFactory(private val parent: DynamicFeaturePlugin) {
 
