@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="attr_my_toolbar_height" format="dimension" />
+    <dimen name="my_toolbar_app_height">20dp</dimen>
+</resources>

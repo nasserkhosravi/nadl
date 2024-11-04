@@ -13,8 +13,9 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NADLApp"
-include(":app")
+rootProject.name = "NadlProj"
+include(":base-app-main")
+include(":base-app-expose")
 include(":myLibraryImpl")
-include(":AppExporter")
+include(":dynamic-lib-apk-exporter")
 include(":myLibraryApi")
