@@ -15,7 +15,7 @@ import java.io.FileFilter
 import java.lang.IllegalArgumentException
 import javax.xml.parsers.DocumentBuilderFactory
 
-//maybe its not bad idea to move parser to library client
+//maybe its not bad a idea to make [RuntimeAssetManager] as a dynamic module
 //its better to read all from apkFile but currently we cant read resources.arsc
 class RuntimeAssetManager(
 

@@ -7,6 +7,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import io.nasser.baseapp.expose.databinding.ActivityMainBinding
+import io.nasser.nadl.baseapp.expose.DynamicHostActivity.Companion.MODE_JETPACK_COMPOSE
+import io.nasser.nadl.baseapp.expose.DynamicHostActivity.Companion.MODE_OLD
+import io.nasser.nadl.baseapp.expose.DynamicHostActivity.Companion.TECH_MODE
 import io.nasser.ndksample.SampleJNIDelegate
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 
@@ -55,6 +58,18 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnOpenActivity.setOnClickListener {
             startActivity(Intent(this@MainActivity, DynamicHostActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                intent = Intent().apply {
+                    putExtra(TECH_MODE, MODE_OLD)
+                }
+            })
+        }
+
+        binding.btnOpenComposeActivity.setOnClickListener {
+            startActivity(Intent(this@MainActivity, DynamicHostActivity::class.java).apply {
+                intent = Intent().apply {
+                    putExtra(TECH_MODE, MODE_JETPACK_COMPOSE)
+                }
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             })
         }

@@ -6,11 +6,13 @@ import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import io.nasser.baseapp.expose.R
-import io.nasser.mylib.api.ResourceDirectBridge
+import io.nasser.mylib.api.HostBridgeApi
 import io.nasser.nadl.baseapp.expose.content.res.RuntimeResource
+import java.lang.IllegalArgumentException
 
-class DynamicHostActivity : AppCompatActivity(),ResourceDirectBridge {
+class DynamicHostActivity : AppCompatActivity(),HostBridgeApi {
     private lateinit var myContext: Context
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,12 +21,26 @@ class DynamicHostActivity : AppCompatActivity(),ResourceDirectBridge {
 
         val featurePlugin = getFeaturePlugin()
         featurePlugin.loadEverything(this)
+        val techMode = intent.getStringExtra(TECH_MODE) ?: MODE_OLD
 
-        val starterFragment = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            featurePlugin.classFactory.newStarterFragmentXml("Message from another world")
-        } else {
-            featurePlugin.classFactory.newStarterFragmentBasic("Message from another world")
+        val centerTextMessage = "Message from host"
+        val starterFragment : Fragment = when(techMode){
+            MODE_JETPACK_COMPOSE->{
+                featurePlugin.classFactory.newStarterFragmentBasic(centerTextMessage)
+            }
+
+            MODE_OLD->{
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    featurePlugin.classFactory.newStarterFragmentXml(centerTextMessage)
+                } else {
+                    featurePlugin.classFactory.newStarterFragmentBasic(centerTextMessage)
+                }
+            }
+
+            else-> throw IllegalArgumentException()
         }
+
+
         supportFragmentManager.beginTransaction()
             .replace(R.id.frame_dynamic_host, starterFragment)
             .commit()
@@ -50,5 +66,11 @@ class DynamicHostActivity : AppCompatActivity(),ResourceDirectBridge {
 
     override fun getSupportFont(id: Int): Typeface {
         return (resources as RuntimeResource).dlAsset?.getSupportedFont(myContext,id)!!
+    }
+
+    companion object{
+        const val TECH_MODE = "tech_mode"
+        const val MODE_JETPACK_COMPOSE = "mode_jetpack_compose"
+        const val MODE_OLD = "mode_programmer"
     }
 }

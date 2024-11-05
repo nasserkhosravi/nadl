@@ -104,6 +104,7 @@ class DynamicFeaturePlugin(
             private const val CLASS_PATH_HelloWorld = "$LIB_PATH.HelloWorldImpl"
             private const val CLASS_PATH_StarterFragmentXml = "$LIB_PATH.StarterFragmentXml"
             private const val CLASS_PATH_StarterFragmentBasic = "$LIB_PATH.StarterFragmentBasic"
+            private const val CLASS_PATH_StarterFragmentCompose = "$LIB_PATH.StarterFragmentCompose"
         }
 
         fun newHelloWorld(): HelloWorld {
@@ -120,6 +121,13 @@ class DynamicFeaturePlugin(
 
         fun newStarterFragmentBasic(centerTextMessage: String): Fragment {
             val loadClassPath = parent.getClassLoader().loadClass(CLASS_PATH_StarterFragmentBasic)
+            return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
+                arguments = bundleOf("centerTextMessage" to centerTextMessage)
+            }
+        }
+
+        fun newJetpackFragmentBasic(centerTextMessage: String): Fragment {
+            val loadClassPath = parent.getClassLoader().loadClass(CLASS_PATH_StarterFragmentCompose)
             return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
                 arguments = bundleOf("centerTextMessage" to centerTextMessage)
             }

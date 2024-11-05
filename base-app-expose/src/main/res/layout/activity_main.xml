@@ -58,6 +58,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="open activity" />
+
+        <Button
+            android:id="@+id/btn_open_compose_activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="open compose activity" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
