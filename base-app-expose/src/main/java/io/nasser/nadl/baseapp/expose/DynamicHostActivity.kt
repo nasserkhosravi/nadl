@@ -1,43 +1,61 @@
 package io.nasser.nadl.baseapp.expose
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Typeface
-import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import io.nasser.baseapp.expose.R
 import io.nasser.mylib.api.HostBridgeApi
 import io.nasser.nadl.baseapp.expose.content.res.RuntimeResource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 
-class DynamicHostActivity : AppCompatActivity(),HostBridgeApi {
+class DynamicHostActivity : AppCompatActivity(), CoroutineScope by MainScope(), HostBridgeApi {
     private lateinit var myContext: Context
 
+    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dynamic_host)
 
         val featurePlugin = getFeaturePlugin()
-        featurePlugin.loadEverything(this)
-        val techMode = intent.getStringExtra(TECH_MODE) ?: MODE_OLD
-
-        val centerTextMessage = "Message from host"
-        val starterFragment : Fragment = when(techMode){
-            MODE_JETPACK_COMPOSE->{
-                featurePlugin.classFactory.newStarterFragmentBasic(centerTextMessage)
-            }
-
-            MODE_OLD->{
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    featurePlugin.classFactory.newStarterFragmentXml(centerTextMessage)
-                } else {
-                    featurePlugin.classFactory.newStarterFragmentBasic(centerTextMessage)
+        launch {
+            featurePlugin.loadEverythingFlow(this@DynamicHostActivity)
+                .catch {
+                    it.printStackTrace()
+                    Toast.makeText(this@DynamicHostActivity, "Failed to load", Toast.LENGTH_SHORT).show()
                 }
+                .collect {
+                    present(featurePlugin)
+                }
+        }
+    }
+
+    private fun present(featurePlugin: DynamicFeaturePlugin) {
+        val starterKey = intent.getStringExtra(KEY_DEEPLINK) ?: VALUE_STARTER_XML
+
+        val centerTextMessage = "My Message from host"
+        val starterFragment: Fragment = when (starterKey) {
+            VALUE_STARTER_JETPACK_COMPOSE -> {
+                featurePlugin.classFactory.newJetpackComposeFragmentBasic(centerTextMessage)
             }
 
-            else-> throw IllegalArgumentException()
+            VALUE_STARTER_OLD -> {
+                featurePlugin.classFactory.newStarterFragmentPure(centerTextMessage)
+            }
+
+            VALUE_STARTER_XML -> {
+                featurePlugin.classFactory.newStarterFragmentXml(centerTextMessage)
+            }
+
+            else -> throw IllegalArgumentException()
         }
 
 
@@ -65,12 +83,14 @@ class DynamicHostActivity : AppCompatActivity(),HostBridgeApi {
     }
 
     override fun getSupportFont(id: Int): Typeface {
-        return (resources as RuntimeResource).dlAsset?.getSupportedFont(myContext,id)!!
+        return (resources as RuntimeResource).dlAsset?.getSupportedFont(myContext, id)!!
     }
 
-    companion object{
-        const val TECH_MODE = "tech_mode"
-        const val MODE_JETPACK_COMPOSE = "mode_jetpack_compose"
-        const val MODE_OLD = "mode_programmer"
+    companion object {
+        const val KEY_DEEPLINK = "path"
+        private const val COMMON_PATH = "app://nadl.net"
+        const val VALUE_STARTER_JETPACK_COMPOSE = "$COMMON_PATH/compose"
+        const val VALUE_STARTER_XML = "$COMMON_PATH/xml"
+        const val VALUE_STARTER_OLD = "$COMMON_PATH/old"
     }
 }

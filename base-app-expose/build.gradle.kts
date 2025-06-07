@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "io.nasser.baseapp.expose"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 23
@@ -25,7 +25,7 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation ("io.reactivex.rxjava3:rxjava:3.1.8")

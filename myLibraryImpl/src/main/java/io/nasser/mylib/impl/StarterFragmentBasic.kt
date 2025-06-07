@@ -15,7 +15,6 @@ import io.nasser.mylibrary.R
 class StarterFragmentBasic : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        //xml layout test
         return LinearLayout(context).apply {
             layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
             orientation = LinearLayout.VERTICAL
@@ -24,7 +23,7 @@ class StarterFragmentBasic : Fragment() {
 
             addView(TextView(context).apply {
                 layoutParams =
-                    LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+                    LinearLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
                         .apply {
                             gravity = Gravity.CENTER
                         }

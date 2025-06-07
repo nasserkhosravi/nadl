@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "io.nasser.mylibrary"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 23
@@ -23,8 +23,10 @@ android {
 }
 
 dependencies {
-    compileOnly("androidx.appcompat:appcompat:1.6.1")
+    compileOnly("androidx.appcompat:appcompat:1.7.0")
     compileOnly("com.google.code.gson:gson:2.10.1")
+//    implementation("androidx.drawerlayout:drawerlayout:1.0.0")
     implementation(project(mapOf("path" to ":myLibraryApi")))
+    implementation(project(mapOf("path" to ":compose-sample")))
 
 }

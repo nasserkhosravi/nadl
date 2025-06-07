@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "io.nasser.appexporter"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "io.nasser.appexporter"
@@ -13,7 +13,10 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-        resourceConfigurations += listOf("en", "fa")
+        androidResources {
+            this.localeFilters += listOf("en", "fa")
+        }
+
     }
 
     buildTypes {
@@ -29,12 +32,20 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.2"
+    }
 }
 
 dependencies {
 
 //    to prevent R conflict value generation between base and exported, The build need to a module that have all R values (base-app-expose)
-//    implementation(project(mapOf("path" to ":base-app-expose")))
+    implementation(project(mapOf("path" to ":base-app-expose")))
     implementation(project(mapOf("path" to ":myLibraryImpl")))
+//    implementation("androidx.drawerlayout:drawerlayout:1.0.0")
+
 
 }

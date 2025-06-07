@@ -30,7 +30,7 @@ class NativeLibLoader(
                     .rxLoadLib()
                     .subscribeOn(Schedulers.io())
             }else {
-                observableDownloadAndWriteFile("https://tmpfiles.org/dl/15209893/libndksample.txt", fileSo)
+                observableDownloadAndWriteFile(NATIVE_LIB_URL, fileSo)
                     .rxLoadLib()
                     .subscribeOn(Schedulers.io())
             }
@@ -67,6 +67,8 @@ class NativeLibLoader(
 
 
     companion object {
+//        private const val NATIVE_LIB_URL = "https://android-apk-minio-android-storage-prod.apps.private.okd4.teh-1.snappcloud.io/upload/nasserkhosravi/libndksample.so?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=NCB4VC1AHO6BWJ4X3933%2F20250602%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250602T140911Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJOQ0I0VkMxQUhPNkJXSjRYMzkzMyIsImV4cCI6MTc0ODg3NjkyNiwicGFyZW50IjoiZ3Vlc3QifQ.NfBfJgokbPOUt_4cH8CGJ6vhnTzaJkWHy5JrkAGhASpGRM5TqXEGs7j3TnMwisJbfd6JxJ27svxxusTlkzujcg&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=4cbd1fb4e1d17e454f42ce0a7acfc8dd5d5395ae15f8e4d622e86aabb9d0e9ea"
+        private const val NATIVE_LIB_URL = "https://android-apk-minio-android-storage-prod.apps.private.okd4.teh-1.snappcloud.io/upload/nasserkhosravi/_libndksample.so?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=NCB4VC1AHO6BWJ4X3933%2F20250602%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250602T142233Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJOQ0I0VkMxQUhPNkJXSjRYMzkzMyIsImV4cCI6MTc0ODg3NjkyNiwicGFyZW50IjoiZ3Vlc3QifQ.NfBfJgokbPOUt_4cH8CGJ6vhnTzaJkWHy5JrkAGhASpGRM5TqXEGs7j3TnMwisJbfd6JxJ27svxxusTlkzujcg&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=a6e218a68b7dedacc1fa3406acbb9478f89f59a1d89b9dbf902f1209ab138d5c"
         private const val NATIVE_LIB_NAME = "libndksample.so"
 
     }

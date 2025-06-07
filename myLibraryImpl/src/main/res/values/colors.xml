@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="zzBackColor">#673AB7</color>
+    <color name="newColor2">#3F51B5</color>
 <!--don't use color reference, example: <color name="zzBackColor">@color/anotherColor</color>-->
 </resources>

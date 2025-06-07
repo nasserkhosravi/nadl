@@ -1,6 +1,5 @@
 package io.nasser.nadl.baseapp.expose
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.content.res.loader.ResourcesLoader
@@ -14,10 +13,15 @@ import androidx.fragment.app.Fragment
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.PathClassLoader
 import io.nasser.mylib.api.HelloWorld
+import io.nasser.nadl.baseapp.expose.Const.APK_NAME
 import io.nasser.nadl.baseapp.expose.content.OptionalContextWrapper
-import io.nasser.nadl.baseapp.expose.content.res.RuntimeResource
-import io.nasser.nadl.baseapp.expose.content.res.RuntimeAssetManager
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.nasser.nadl.baseapp.expose.content.res.ApkResourceLoader
+import io.nasser.nadl.baseapp.expose.content.res.idmap.ResIdLoader
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import java.io.File
 
 
@@ -45,9 +49,13 @@ class DynamicFeaturePlugin(
 
     fun isReady(): Boolean = apkFile?.exists() ?: false
 
-    private fun loadDex(context: Context) {
-        if (isReady()) return
-        loadApkFromAsset(context)
+    private fun loadDexFlow(context: Context): Flow<Unit> {
+        if (isReady()) {
+            return flowOf(Unit)
+        }
+        return loadApkFromAsset(context)
+//        return loadFromHttpAndStoreFileFlow(context, Const.APK_URL)
+
     }
 
     private fun loadResource(context: Context) {
@@ -58,18 +66,25 @@ class DynamicFeaturePlugin(
         }
     }
 
-    fun loadEverything(context: Context) {
-        loadDex(context)
-        loadResource(context)
+    fun loadEverythingFlow(context: Context): Flow<Unit> {
+        return loadDexFlow(context).onEach {
+            loadResource(context)
+        }
     }
 
-    private fun loadApkFromAsset(context: Context) {
-        val readBytes = context.assets.open(APK_NAME).readBytes()
-        apkFile = File(context.cacheDir, System.currentTimeMillis().toString().plus("asset_adl3.apk")).also {
-            it.writeBytes(readBytes)
+    private fun loadApkFromAsset(context: Context) : Flow<Unit> {
+        return  flow {
+            try {
+                val file = getAssetAsTempFile(context,APK_NAME)
+                apkFile = file
+            }catch (e:Exception){
+                e.stackTraceToString()
+            }
+
+            emit(Unit)
         }
-        Toast.makeText(context, "Ready", Toast.LENGTH_SHORT).show()
     }
+
 
     @RequiresApi(Build.VERSION_CODES.R)
     private fun overrideResourcesApi30AndMore(context: Context) {
@@ -82,17 +97,12 @@ class DynamicFeaturePlugin(
         context.resources.addLoaders(loader)
     }
 
-    @SuppressLint("CheckResult")
-    private fun loadFromHttpAndStoreFile(context: Context, url: String) {
-        val cacheApkFile = File(context.cacheDir, "adl.apk")
-        observableDownloadAndWriteFile(url, cacheApkFile)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+    private fun loadFromHttpAndStoreFileFlow(context: Context, url: String): Flow<Unit> {
+        return downloadFileWithUrlCachingFlow(context,url)
+            .map {
                 apkFile = it
                 Toast.makeText(appContext, "download completed", Toast.LENGTH_SHORT).show()
-            }, {
-                Toast.makeText(appContext, "download failed", Toast.LENGTH_SHORT).show()
-            })
+            }
     }
 
 
@@ -104,7 +114,9 @@ class DynamicFeaturePlugin(
             private const val CLASS_PATH_HelloWorld = "$LIB_PATH.HelloWorldImpl"
             private const val CLASS_PATH_StarterFragmentXml = "$LIB_PATH.StarterFragmentXml"
             private const val CLASS_PATH_StarterFragmentBasic = "$LIB_PATH.StarterFragmentBasic"
-            private const val CLASS_PATH_StarterFragmentCompose = "$LIB_PATH.StarterFragmentCompose"
+            private const val CLASS_PATH_StarterFragmentCompose = "io.nasser.composesamplemodule.ui.ComposeSampleFragment"
+
+            private const val KEY_CENTER_MESSAGE_TEXT = "centerTextMessage"
         }
 
         fun newHelloWorld(): HelloWorld {
@@ -115,27 +127,26 @@ class DynamicFeaturePlugin(
         fun newStarterFragmentXml(centerTextMessage: String): Fragment {
             val loadClassPath = parent.getClassLoader().loadClass(CLASS_PATH_StarterFragmentXml)
             return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
-                arguments = bundleOf("centerTextMessage" to centerTextMessage)
+                arguments = bundleOf(KEY_CENTER_MESSAGE_TEXT to centerTextMessage)
             }
         }
 
-        fun newStarterFragmentBasic(centerTextMessage: String): Fragment {
+        fun newStarterFragmentPure(centerTextMessage: String): Fragment {
             val loadClassPath = parent.getClassLoader().loadClass(CLASS_PATH_StarterFragmentBasic)
             return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
-                arguments = bundleOf("centerTextMessage" to centerTextMessage)
+                arguments = bundleOf(KEY_CENTER_MESSAGE_TEXT to centerTextMessage)
             }
         }
 
-        fun newJetpackFragmentBasic(centerTextMessage: String): Fragment {
+        fun newJetpackComposeFragmentBasic(centerTextMessage: String): Fragment {
             val loadClassPath = parent.getClassLoader().loadClass(CLASS_PATH_StarterFragmentCompose)
             return (loadClassPath.getDeclaredConstructor().newInstance() as Fragment).apply {
-                arguments = bundleOf("centerTextMessage" to centerTextMessage)
+                arguments = bundleOf(KEY_CENTER_MESSAGE_TEXT to centerTextMessage)
             }
         }
     }
 
     companion object {
-        private const val APK_NAME = "dynamic-lib-apk-exporter-debug.apk"
         private const val FILE_VALUES = "Values.zip"
 
         fun properContext(newBase: Context): Context {
@@ -143,31 +154,25 @@ class DynamicFeaturePlugin(
                 return newBase
             }
             //todo: need caching check
-            val valueFile = loadValueFile(newBase)
-            val apkFile = loadApkFromAsset(newBase)
-
+//            val valueFile = loadValueFile(newBase)
+            val apkFile = getAssetAsTempFile(newBase, APK_NAME)
+            val newResource : Resources? = ApkResourceLoader(newBase,newBase.resources).also{
+                if (it.load(apkFile.path,newBase.packageName)) {
+                    it
+                }
+            }
+//            RuntimeResource(
+//                newBase.resources,
+//                RuntimeAssetManager(newBase.filesDir, apkFile, valueFile, "en")
+//            )
             return OptionalContextWrapper(
                 newBase,
-                RuntimeResource(
-                    newBase.resources,
-                    RuntimeAssetManager(newBase.filesDir, apkFile, valueFile, "en")
-                )
+                newResource
             )
         }
 
         private fun loadValueFile(newBase: Context): File {
-            val readBytes = newBase.assets.open(FILE_VALUES).readBytes()
-            val rtFile = File(newBase.filesDir, "Values.zip").also {
-                it.writeBytes(readBytes)
-            }
-            return rtFile
-        }
-
-        private fun loadApkFromAsset(originalContext: Context): File {
-            val readBytes = originalContext.assets.open(APK_NAME).readBytes()
-            return File(originalContext.cacheDir, "asset_adl3.apk").also {
-                it.writeBytes(readBytes)
-            }
+            return getAssetAsTempFile(newBase,FILE_VALUES)
         }
     }
 }

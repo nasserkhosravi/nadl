@@ -1,28 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginHorizontal="20dp"
     android:fitsSystemWindows="true">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize" />
-
-    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginHorizontal="20dp"
-        android:orientation="vertical"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_marginHorizontal="10dp"
+        android:orientation="vertical">
 
         <Button
             android:id="@+id/btn_rt_native_present"
@@ -32,7 +20,7 @@
             android:text="RT native present" />
 
         <Button
-            android:id="@+id/btn_download"
+            android:id="@+id/btn_prepare"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -53,18 +41,36 @@
             android:layout_marginTop="20dp" />
 
         <Button
-            android:id="@+id/btn_open_activity"
+            android:id="@+id/btn_open_programming_sample"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="open activity" />
+            android:text="Open programming sample" />
 
         <Button
-            android:id="@+id/btn_open_compose_activity"
+            android:id="@+id/btn_open_xml_sample"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="open compose activity" />
+            android:text="Open xml sample" />
+
+        <Button
+            android:id="@+id/btn_open_compose_sample"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Open compose sample" />
     </LinearLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleLarge"
+        android:indeterminateTint="@color/green"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone" />
+
+</FrameLayout>

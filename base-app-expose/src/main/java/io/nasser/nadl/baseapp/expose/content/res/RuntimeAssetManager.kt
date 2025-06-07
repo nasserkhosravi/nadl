@@ -14,11 +14,11 @@ import java.io.File
 import java.io.FileFilter
 import java.lang.IllegalArgumentException
 import javax.xml.parsers.DocumentBuilderFactory
+import androidx.core.graphics.toColorInt
 
 //maybe its not bad a idea to make [RuntimeAssetManager] as a dynamic module
 //its better to read all from apkFile but currently we cant read resources.arsc
 class RuntimeAssetManager(
-
     internalFileDir: File,
     val apkFile: File,
     valuesFileMyBundleZip: File,
@@ -98,15 +98,6 @@ class RuntimeAssetManager(
         }
     }
 
-    private fun nodeAttributeToValueRes(node: Node): ValueRes {
-        val attributes = node.attributes
-        val type = attributes.item(0).nodeValue
-        val name = attributes.item(1).nodeValue
-        val id = attributes.item(2).nodeValue
-        val hexId = Integer.decode(id)
-        return ValueRes(hexId, name, type)
-    }
-
     fun getResourceEntryName(id: Int): String? {
         return resIdTableHolder[id]?.entryName
     }
@@ -118,7 +109,7 @@ class RuntimeAssetManager(
     fun getColor(id: Int): Int? {
         //need check theme
         val hexColor = valuesValueLookup[id] ?: return null
-        return Color.parseColor(hexColor)
+        return hexColor.toColorInt()
     }
 
     fun getDimen(id: Int): Float? {
@@ -187,7 +178,7 @@ class RuntimeAssetManager(
 
     companion object {
 
-        private fun iterateNodeHasAttribute(file: File, nodeNameFilter: String, action: (Node) -> Unit) {
+        fun iterateNodeHasAttribute(file: File, nodeNameFilter: String, action: (Node) -> Unit) {
             //use XmlPullParserFactory when xml is large.
             val parsed = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
             val childNodes = parsed?.documentElement?.childNodes ?: return
@@ -201,8 +192,24 @@ class RuntimeAssetManager(
             }
             return
         }
+        fun nodeAttributeToValueRes(node: Node): ValueRes {
+            val attributes = node.attributes
+            val type = attributes.item(0).nodeValue
+            val name = attributes.item(1).nodeValue
+            val id = attributes.item(2).nodeValue
+            val hexId = Integer.decode(id)
+            return ValueRes(hexId, name, type)
+        }
+
 
         private const val RESOURCE_TABLE_FILE_NAME = "PublicRes.xml"
+
+        /** run following command by apktool:
+         * apktool d dynamic-lib-apk-exporter-debug.apk -o temp_apk_decode > /dev/null && \
+         * cd temp_apk_decode/res && \
+         * zip -r ../../Values.zip $(find . -type d -name 'values*') > /dev/null && \
+         * cd ../.. && rm -rf temp_apk_decode
+         */
     }
 
 
