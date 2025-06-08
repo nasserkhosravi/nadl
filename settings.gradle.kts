@@ -14,10 +14,10 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "NadlProj"
-include(":base-app-main")
-include(":base-app-expose")
-include(":myLibraryImpl")
-include(":dynamic-lib-apk-exporter")
-include(":myLibraryApi")
-include(":compose-sample")
-include(":app-host-sample")
+include(":host-app-main")
+include(":host-app-impl")
+include(":pluing-basic-impl")
+include(":plugin-apk-exporter")
+include(":plugin-contract")
+include(":plugin-compose-impl")
+include(":host-app-sample")
