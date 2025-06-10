@@ -70,7 +70,7 @@ fun ResumeCounter(arguments: Bundle?) {
 //        + "\n onResume count: $counter"
         Text(
             text = text,
-//            color = Color.Blue
+            color = Color.Gray
         )
     }
 }

@@ -9,6 +9,7 @@ import android.os.ParcelFileDescriptor
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import dalvik.system.BaseDexClassLoader
+import dalvik.system.DexClassLoader
 import dalvik.system.PathClassLoader
 import io.nasser.nadl.baseapp.expose.Const.APK_NAME
 import io.nasser.nadl.baseapp.expose.sdk.res.RuntimeAssetManager
@@ -28,6 +29,8 @@ class DynamicFeaturePlugin(
 
     private var apkFile: File? = null
     private var dexLoader: BaseDexClassLoader? = null
+    private var resourcesLoader: ResourcesLoader? = null
+    private var inCleaning = false
 
     internal fun getClassLoader(): BaseDexClassLoader {
         if (dexLoader == null) {
@@ -63,12 +66,12 @@ class DynamicFeaturePlugin(
         }
     }
 
-    private fun loadApkFromAsset(context: Context) : Flow<Unit> {
-        return  flow {
+    private fun loadApkFromAsset(context: Context): Flow<Unit> {
+        return flow {
             try {
-                val file = getAssetAsTempFile(context,APK_NAME)
+                val file = getAssetAsTempFile(context, APK_NAME)
                 apkFile = file
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 e.stackTraceToString()
             }
 
@@ -76,20 +79,35 @@ class DynamicFeaturePlugin(
         }
     }
 
+    fun clear(context: Context) {
+        inCleaning = true
+        apkFile = null
+        dexLoader = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            resourcesLoader?.let {
+                context.resources.removeLoaders(it)
+            }
+            Resources.getSystem().addLoaders(resourcesLoader)
+            resourcesLoader = null
+
+        }
+        inCleaning = false
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.R)
     private fun overrideResourcesApi30AndMore(context: Context) {
-        val loader = ResourcesLoader().also {
+        resourcesLoader = ResourcesLoader().also {
             val apkFd = ParcelFileDescriptor.open(apkFile, ParcelFileDescriptor.MODE_READ_ONLY)
             val provider = ResourcesProvider.loadFromApk(apkFd)
             it.addProvider(provider)
         }
-        Resources.getSystem().addLoaders(loader)
-        context.resources.addLoaders(loader)
+        Resources.getSystem().addLoaders(resourcesLoader)
+        context.resources.addLoaders(resourcesLoader)
     }
 
     private fun loadFromHttpAndStoreFileFlow(context: Context, url: String): Flow<Unit> {
-        return downloadFileWithUrlCachingFlow(context,url)
+        return downloadFileWithUrlCachingFlow(context, url)
             .map {
                 apkFile = it
                 Toast.makeText(appContext, "download completed", Toast.LENGTH_SHORT).show()

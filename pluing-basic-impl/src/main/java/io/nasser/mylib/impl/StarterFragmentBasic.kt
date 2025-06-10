@@ -29,7 +29,7 @@ class StarterFragmentBasic : Fragment() {
         return LinearLayout(context).apply {
             layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
             orientation = LinearLayout.VERTICAL
-//            gravity = Gravity.CENTER
+            gravity = Gravity.CENTER
             //color test
             setBackgroundColor(getColorValue(Colors.zzBackColor))
 
@@ -39,7 +39,7 @@ class StarterFragmentBasic : Fragment() {
                         .apply {
                             gravity = Gravity.CENTER
                         }
-//                setTextColor(getColorValue(Colors.white))
+                setTextColor(getColorValue(Colors.white))
 
                 id = ViewIds.tvText
             })
